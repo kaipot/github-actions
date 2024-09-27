@@ -59,7 +59,7 @@ jobs:
         # Fetch protobuf release info.
         RELEASE="$(curl -s -m10 --connect-timeout 5 \
           https://api.github.com/repos/protocolbuffers/protobuf/releases/latest)"
-        ASSETS="$(jq '.assets | map(select(.browser_download_url | test("protoc.*linux-x86_64")))')"
+        ASSETS="$(jq '.assets | map(select(.browser_download_url | test("protoc.*linux-x86_64")))' <<< "$RELEASE")"
         [ "$(jq length <<< "$ASSETS")" -eq 1 ] || exit 1
         # Download and unarchive the release.
         DOWNLOAD_URL="$(jq -r ".[0].browser_download_url" <<< "$ASSETS")"
