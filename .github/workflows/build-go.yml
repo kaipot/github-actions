@@ -1,0 +1,72 @@
+name: Build Go project
+
+on:
+  workflow_call:
+    secrets:
+      ssh-private-keys:
+        required: false
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    env:
+      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Check for proto files
+      run: |
+        echo "proto=false" >> "$GITHUB_ENV"
+        find . -name "*.proto" | grep -q . && echo "proto=true" >> "$GITHUB_ENV"
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23.x'
+
+    - name: Set up access to private repositories
+      if: ${{ secrets.ssh-private-keys }} != ''
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.ssh-private-keys }}
+
+    - name: Go mod tidy check
+      run: |
+        MOD_DIFF=0
+        while read F; do
+          cd "$(dirname "$F")" &>/dev/null
+          pwd
+          if ! go mod tidy -diff; then
+            echo "::error file=$F::changes needed"
+            MOD_DIFF=1
+          fi
+          cd - &>/dev/null
+        done <<< "$(find . -type f -name go.mod)"
+        [ "$MOD_DIFF" -eq 0 ] && exit 0 || exit 1
+
+    - name: Set up protoc
+      if: ${{ env.proto }} == 'true'
+      uses: arduino/setup-protoc@v3
+
+    - name: Set up protoc plugins
+      if: ${{ env.proto }} == 'true'
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        export PATH="$(go env GOPATH)/bin:$PATH"
+
+    - name: Compile proto files
+      if: ${{ env.proto }} == 'true'
+      run: |
+        find . -name "*.proto" -exec \
+        protoc --go_out=. --go_opt=paths=source_relative \
+        --go-grpc_out=. --go-grpc_opt=paths=source_relative {} \;
+
+    - name: Build
+      run: go build
+
+    - name: Test
+      run: go test -v ./...
+
