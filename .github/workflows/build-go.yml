@@ -20,8 +20,10 @@ jobs:
       run: |
         if find . -name "*.proto" | grep -q .; then
           echo "proto=true" >> "$GITHUB_ENV"
+          echo "Proto files found" >> "$GITHUB_STEP_SUMMARY"
         else
           echo "proto=false" >> "$GITHUB_ENV"
+          echo "No proto files found" >> "$GITHUB_STEP_SUMMARY"
         fi
 
     - name: Set up Go
