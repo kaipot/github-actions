@@ -43,7 +43,7 @@ jobs:
         git commit -m "Update ${{ inputs.service }} commit to ${{ inputs.commit }}"
         git push
         echo ":rocket: Updated commit for ${{ inputs.service }} " \
-          "from [\`$OLD_COMMIT\`](https://github.com/kaipot/${{ inputs.service }}/tree/${{ inputs.commit }}) " \
-          "to [\`${{ inputs.commit }}\`](https://github.com/kaipot/${{ inputs.service }}/tree/$OLD_COMMIT)" \
+          "from [\`$OLD_COMMIT\`](https://github.com/kaipot/${{ inputs.service }}/tree/$OLD_COMMIT) " \
+          "to [\`${{ inputs.commit }}\`](https://github.com/kaipot/${{ inputs.service }}/tree/${{ inputs.commit }})" \
           >> $GITHUB_STEP_SUMMARY
 
