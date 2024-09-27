@@ -36,11 +36,11 @@ jobs:
             exit 1
           fi
         fi
-        echo "Updating commit for ${{ inputs.service }} from $OLD_COMMIT to ${{ inputs.commit }}" >> $GITHUB_STEP_SUMMARY
         git config user.email "githubaction@dummy.com"
         git config user.name "GitHub Action"
         echo "${{ inputs.commit }}" > "$COMMIT_FILE"
         git add -A
         git commit -m "Update ${{ inputs.service }} commit to ${{ inputs.commit }}"
         git push
+        echo ":rocket: Updated commit for ${{ inputs.service }} from \`$OLD_COMMIT\` to \`${{ inputs.commit }}\`" >> $GITHUB_STEP_SUMMARY
 

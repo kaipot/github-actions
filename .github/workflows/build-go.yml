@@ -21,10 +21,10 @@ jobs:
       run: |
         if find . -name "*.proto" | grep -q .; then
           echo "proto=true" >> $GITHUB_ENV
-          echo "::notice ::Proto files found"
+          echo ":information_source: Proto files found" >> $GITHUB_STEP_SUMMARY
         else
           echo "proto=false" >> $GITHUB_ENV
-          echo "::notice ::No proto files found"
+          echo ":no_entry_sign: No proto files found" >> $GITHUB_STEP_SUMMARY
         fi
 
     - name: Set up Go
@@ -50,7 +50,8 @@ jobs:
           fi
           cd - &>/dev/null
         done <<< "$(find . -type f -name go.mod)"
-        [ "$MOD_DIFF" -eq 0 ] && exit 0 || exit 1
+        [ "$MOD_DIFF" -eq 1 ] && exit 1
+        echo ":white_check_mark: Go mod tidy check OK" >> $GITHUB_STEP_SUMMARY
 
     - name: Set up protoc
       if: ${{ env.proto == 'true' }}
@@ -69,10 +70,15 @@ jobs:
         find . -name "*.proto" -exec \
         protoc --go_out=. --go_opt=paths=source_relative \
         --go-grpc_out=. --go-grpc_opt=paths=source_relative {} \;
+        echo ":white_check_mark: Compiled proto files" >> $GITHUB_STEP_SUMMARY
 
     - name: Build
-      run: go build
+      run: |
+        go build
+        echo ":white_check_mark: Go package compiled" >> $GITHUB_STEP_SUMMARY
 
     - name: Test
-      run: go test -v ./...
+      run: |
+        go test -v ./...
+        echo ":white_check_mark: Go test completed" >> $GITHUB_STEP_SUMMARY
 
