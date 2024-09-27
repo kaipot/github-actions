@@ -27,7 +27,6 @@ jobs:
         go-version: '1.23.x'
 
     - name: Set up access to private repositories
-      if: ${{ secrets.ssh-private-keys }} != ''
       uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.ssh-private-keys }}
