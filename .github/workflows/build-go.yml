@@ -68,8 +68,8 @@ jobs:
       if: ${{ env.proto == 'true' }}
       run: |
         find . -name "*.proto" -exec \
-        protoc --go_out=. --go_opt=paths=source_relative \
-        --go-grpc_out=. --go-grpc_opt=paths=source_relative {} \;
+          protoc --go_out=. --go_opt=paths=source_relative \
+          --go-grpc_out=. --go-grpc_opt=paths=source_relative {} \;
         echo ":white_check_mark: Compiled proto files" >> $GITHUB_STEP_SUMMARY
 
     - name: Build
