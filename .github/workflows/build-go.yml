@@ -21,7 +21,7 @@ jobs:
       run: |
         if find . -name "*.proto" | grep -q .; then
           echo "proto=true" >> $GITHUB_ENV
-          echo ":information_source: Proto files found" >> $GITHUB_STEP_SUMMARY
+          echo ":eyes: Proto files found" >> $GITHUB_STEP_SUMMARY
         else
           echo "proto=false" >> $GITHUB_ENV
           echo ":no_entry_sign: No proto files found" >> $GITHUB_STEP_SUMMARY
@@ -67,6 +67,9 @@ jobs:
     - name: Compile proto files
       if: ${{ env.proto == 'true' }}
       run: |
+        for BIN in protoc protoc-gen-go protoc-gen-go-grpc; do
+          echo ":information_source: $BIN version $($BIN --version | grep -o '[0-9.]\+$')" >> $GITHUB_STEP_SUMMARY
+        done
         find . -name "*.proto" -exec \
           protoc --go_out=. --go_opt=paths=source_relative \
           --go-grpc_out=. --go-grpc_opt=paths=source_relative {} \;
