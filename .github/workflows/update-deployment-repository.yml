@@ -36,7 +36,7 @@ jobs:
             exit 1
           fi
         fi
-        echo "::notice ::Updating commit for ${{ inputs.service }} from $OLD_COMMIT to ${{ inputs.commit }}"
+        echo "Updating commit for ${{ inputs.service }} from $OLD_COMMIT to ${{ inputs.commit }}" >> $GITHUB_STEP_SUMMARY
         git config user.email "githubaction@dummy.com"
         git config user.name "GitHub Action"
         echo "${{ inputs.commit }}" > "$COMMIT_FILE"

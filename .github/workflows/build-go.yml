@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      ssh-private-keys: ${{ secrets.ssh-private-keys }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -19,11 +20,11 @@ jobs:
     - name: Check for proto files
       run: |
         if find . -name "*.proto" | grep -q .; then
-          echo "proto=true" >> "$GITHUB_ENV"
-          echo "Proto files found" >> "$GITHUB_STEP_SUMMARY"
+          echo "proto=true" >> $GITHUB_ENV
+          echo "::notice ::Proto files found"
         else
-          echo "proto=false" >> "$GITHUB_ENV"
-          echo "No proto files found" >> "$GITHUB_STEP_SUMMARY"
+          echo "proto=false" >> $GITHUB_ENV
+          echo "::notice ::No proto files found"
         fi
 
     - name: Set up Go
@@ -32,9 +33,10 @@ jobs:
         go-version: '1.23.x'
 
     - name: Set up access to private repositories
+      if: ${{ env.ssh-private-keys != '' }}
       uses: webfactory/ssh-agent@v0.9.0
       with:
-        ssh-private-key: ${{ secrets.ssh-private-keys }}
+        ssh-private-key: ${{ env.ssh-private-keys }}
 
     - name: Go mod tidy check
       run: |
@@ -51,18 +53,18 @@ jobs:
         [ "$MOD_DIFF" -eq 0 ] && exit 0 || exit 1
 
     - name: Set up protoc
-      if: ${{ env.proto }} == 'true'
+      if: ${{ env.proto == 'true' }}
       uses: arduino/setup-protoc@v3
 
     - name: Set up protoc plugins
-      if: ${{ env.proto }} == 'true'
+      if: ${{ env.proto == 'true' }}
       run: |
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
         export PATH="$(go env GOPATH)/bin:$PATH"
 
     - name: Compile proto files
-      if: ${{ env.proto }} == 'true'
+      if: ${{ env.proto == 'true' }}
       run: |
         find . -name "*.proto" -exec \
         protoc --go_out=. --go_opt=paths=source_relative \
