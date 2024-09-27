@@ -18,8 +18,11 @@ jobs:
 
     - name: Check for proto files
       run: |
-        echo "proto=false" >> "$GITHUB_ENV"
-        find . -name "*.proto" | grep -q . && echo "proto=true" >> "$GITHUB_ENV"
+        if find . -name "*.proto" | grep -q .; then
+          echo "proto=true" >> "$GITHUB_ENV"
+        else
+          echo "proto=false" >> "$GITHUB_ENV"
+        fi
 
     - name: Set up Go
       uses: actions/setup-go@v5
