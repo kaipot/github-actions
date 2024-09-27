@@ -55,6 +55,7 @@ jobs:
 
     - name: Set up protoc
       if: ${{ env.proto == 'true' }}
+      working-directory: /tmp
       run: |
         # Fetch protobuf release info.
         RELEASE="$(curl -s -m10 --connect-timeout 5 \
@@ -78,10 +79,12 @@ jobs:
         mkdir -p "$BIN_DIR"
         mv bin/protoc "$BIN_DIR"
         echo "$BIN_DIR" >> $GITHUB_PATH
-        echo "::notice ::$BIN_DIR"
         # Get protoc plugins.
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        echo ":arrow_down: Installed protoc-gen-go" >> $GITHUB_STEP_SUMMARY
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        echo ":arrow_down: Installed protoc-gen-go-grpc" >> $GITHUB_STEP_SUMMARY
+        echo ":arrow_down: Downloaded [$(basename "$DOWNLOAD_URL")]($DOWNLOAD_URL)" >> $GITHUB_STEP_SUMMARY
         echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         # Print version information.
         for BIN in protoc protoc-gen-go protoc-gen-go-grpc; do
