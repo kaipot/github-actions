@@ -73,16 +73,15 @@ jobs:
           echo "::error file=$F::unknown file format for $(basename "$DOWNLOAD_URL")"
           exit 1
         fi
-        # Add to path, assuming archive contains file "bin/protoc".
-        echo "::notice ::adding $(pwd)/bin to path"
-        echo "::notice ::$(ls "$(pwd)/bin")"
-        echo "::notice ::PWD=$PWD, pwd=$(pwd)"
-        echo "$(pwd)/bin" >> $GITHUB_PATH
+        # Move binary and add to path, assuming archive contains file "bin/protoc".
+        BIN_DIR="$HOME/.local/bin"
+        mkdir -p "$BIN_DIR"
+        mv bin/protoc "$BIN_DIR"
+        echo "$BIN_DIR" >> $GITHUB_PATH
+        echo "::notice ::$BIN_DIR"
         # Get protoc plugins.
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-        echo "::notice ::adding $(go env GOPATH)/bin to path"
-        echo "::notice ::$(ls "$(go env GOPATH)/bin")"
         echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         # Print version information.
         for BIN in protoc protoc-gen-go protoc-gen-go-grpc; do
