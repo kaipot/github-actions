@@ -63,8 +63,8 @@ jobs:
         [ "$(jq length <<< "$ASSETS")" -eq 1 ] || exit 1
         # Download and unarchive the release.
         DOWNLOAD_URL="$(jq -r ".[0].browser_download_url" <<< "$ASSETS")"
-        wget "$DOWNLOAD_URL"
-        echo ":arrow_down: Downloaded $DOWNLOAD_URL" >> $GITHUB_STEP_SUMMARY
+        wget -nv "$DOWNLOAD_URL"
+        echo ":arrow_down: Downloaded [$(basename "$DOWNLOAD_URL")]($DOWNLOAD_URL)" >> $GITHUB_STEP_SUMMARY
         if grep -q '\.zip$' <<< "$DOWNLOAD_URL"; then
           unzip "$(basename "$DOWNLOAD_URL")"
         elif grep -q '\.tar.gz$' <<< "$DOWNLOAD_URL"; then
@@ -74,13 +74,17 @@ jobs:
           exit 1
         fi
         # Add to path, assuming archive contains file "bin/protoc".
-        export PATH="$(pwd)/bin:$PATH"
+        echo "$(pwd)/bin" >> $GITHUB_PATH
         # Get protoc plugins.
         go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-        export PATH="$(go env GOPATH)/bin:$PATH"
+        echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         # Print version information.
         for BIN in protoc protoc-gen-go protoc-gen-go-grpc; do
+          if ! which "$BIN" 2>/dev/null; then
+            echo "::error ::$BIN not found"
+            exit 1
+          fi
           echo ":information_source: $BIN version $($BIN --version | grep -o '[0-9.]\+$')" >> $GITHUB_STEP_SUMMARY
         done
 
